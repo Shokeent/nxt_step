@@ -72,7 +72,7 @@ export function EmailParseDialog({ onParsed }: EmailParseDialogProps) {
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-sm text-gray-500">
-            Paste a job application confirmation email and Claude will extract the details for you.
+            Paste a job application confirmation email and AI will extract the details for you.
           </p>
           <div className="space-y-1">
             <Label htmlFor="email-content">Email content</Label>

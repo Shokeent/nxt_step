@@ -1,4 +1,4 @@
-# JobTracker
+# One More Step
 
 A full-stack job application tracker with a Kanban board, OAuth login, and AI-powered email parsing.
 
@@ -9,7 +9,7 @@ A full-stack job application tracker with a Kanban board, OAuth login, and AI-po
 ## Features
 
 - **Kanban board** — drag cards across 6 stages: Wishlist → Applied → Phone Screen → Interview → Offer → Rejected
-- **AI email parsing** — paste a job confirmation email and Claude (Haiku) auto-fills company, role, date, and URL
+- **AI email parsing** — paste a job confirmation email and AI auto-fills company, role, date, and URL
 - **List view** — sortable table of all applications
 - **Stats dashboard** — response rate, funnel breakdown by stage
 - **OAuth login** — GitHub and Google via NextAuth v5
@@ -26,7 +26,7 @@ Browser
   │     ├─ app/(dashboard)/list/page.tsx  — Table view
   │     ├─ app/(dashboard)/stats/page.tsx — Stats
   │     ├─ app/api/applications/          — CRUD route handlers
-  │     └─ app/api/parse-email/           — Claude API endpoint
+  │     └─ app/api/parse-email/           — AI parsing endpoint
   │
   ├─ NextAuth v5 (Auth.js)
   │     ├─ proxy.ts                       — Edge-compatible auth check
@@ -44,7 +44,7 @@ Browser
 | Auth strategy | NextAuth v5 + Prisma adapter | Session stored in DB for persistence |
 | Proxy split | `auth.config.ts` (Edge) + `auth.ts` (Node) | Prisma uses `node:path` — incompatible with Edge Runtime |
 | Drag-and-drop | `@dnd-kit/core` | Tree-shakeable, works with React 19 |
-| AI model | Claude Haiku (`claude-haiku-4-5-20251001`) | Fast, cheap (~$0.001/call), great at JSON extraction |
+| AI parsing | `lib/ai.ts` wrapper | Isolated behind a single function — easy to swap models |
 | DB adapter | `@prisma/adapter-pg` | Prisma 7 removed inline `url` from schema; requires driver adapter |
 
 ### Email parsing flow
@@ -52,7 +52,7 @@ Browser
 ```
 User pastes email
   → POST /api/parse-email
-  → Claude Haiku extracts {company, role, appliedDate, jobUrl, notes}
+  → AI extracts {company, role, appliedDate, jobUrl, notes}
   → Pre-fills ApplicationForm
   → User reviews and saves
   → POST /api/applications → Prisma → Neon
@@ -65,7 +65,7 @@ User pastes email
 ```bash
 # 1. Clone and install
 git clone <your-repo>
-cd job-tracker
+cd one-more-step
 npm install
 
 # 2. Set up environment
@@ -90,7 +90,7 @@ npm run dev
 | `AUTH_SECRET` | `openssl rand -base64 32` |
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | GitHub → Settings → Developer settings → OAuth Apps |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | [Google Cloud Console](https://console.cloud.google.com) → APIs & Services → Credentials |
-| `ANTHROPIC_API_KEY` | [Anthropic Console](https://console.anthropic.com) |
+| `ANTHROPIC_API_KEY` | AI provider console |
 
 ---
 
@@ -109,5 +109,4 @@ npm run dev
 - [NextAuth v5](https://authjs.dev)
 - [Prisma 7](https://prisma.io) + [Neon](https://neon.tech)
 - [@dnd-kit](https://dndkit.com)
-- [Claude API](https://anthropic.com) (Haiku)
 - [Tailwind CSS v4](https://tailwindcss.com)
