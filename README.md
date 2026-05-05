@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JobTracker
 
-## Getting Started
+A full-stack job application tracker with a Kanban board, OAuth login, and AI-powered email parsing.
 
-First, run the development server:
+**Live demo:** _add your Vercel URL here_
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## Features
+
+- **Kanban board** — drag cards across 6 stages: Wishlist → Applied → Phone Screen → Interview → Offer → Rejected
+- **AI email parsing** — paste a job confirmation email and Claude (Haiku) auto-fills company, role, date, and URL
+- **List view** — sortable table of all applications
+- **Stats dashboard** — response rate, funnel breakdown by stage
+- **OAuth login** — GitHub and Google via NextAuth v5
+
+---
+
+## Architecture
+
+```
+Browser
+  │
+  ├─ Next.js 16 App Router (Vercel)
+  │     ├─ app/(dashboard)/page.tsx       — Kanban board (server component)
+  │     ├─ app/(dashboard)/list/page.tsx  — Table view
+  │     ├─ app/(dashboard)/stats/page.tsx — Stats
+  │     ├─ app/api/applications/          — CRUD route handlers
+  │     └─ app/api/parse-email/           — Claude API endpoint
+  │
+  ├─ NextAuth v5 (Auth.js)
+  │     ├─ proxy.ts                       — Edge-compatible auth check
+  │     └─ auth.ts                        — Full config with Prisma adapter
+  │
+  ├─ Prisma 7 + @prisma/adapter-pg        — Type-safe ORM
+  │
+  └─ Neon (serverless PostgreSQL)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Key decisions
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Decision | Choice | Why |
+|----------|--------|-----|
+| Auth strategy | NextAuth v5 + Prisma adapter | Session stored in DB for persistence |
+| Proxy split | `auth.config.ts` (Edge) + `auth.ts` (Node) | Prisma uses `node:path` — incompatible with Edge Runtime |
+| Drag-and-drop | `@dnd-kit/core` | Tree-shakeable, works with React 19 |
+| AI model | Claude Haiku (`claude-haiku-4-5-20251001`) | Fast, cheap (~$0.001/call), great at JSON extraction |
+| DB adapter | `@prisma/adapter-pg` | Prisma 7 removed inline `url` from schema; requires driver adapter |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Email parsing flow
 
-## Learn More
+```
+User pastes email
+  → POST /api/parse-email
+  → Claude Haiku extracts {company, role, appliedDate, jobUrl, notes}
+  → Pre-fills ApplicationForm
+  → User reviews and saves
+  → POST /api/applications → Prisma → Neon
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Local setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# 1. Clone and install
+git clone <your-repo>
+cd job-tracker
+npm install
 
-## Deploy on Vercel
+# 2. Set up environment
+cp .env.example .env.local
+# Fill in DATABASE_URL, AUTH_SECRET, OAuth IDs, ANTHROPIC_API_KEY
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# 3. Push schema to your database
+npx prisma db push
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# 4. Generate Prisma client
+npx prisma generate
+
+# 5. Run
+npm run dev
+```
+
+### Environment variables
+
+| Variable | Where to get it |
+|----------|----------------|
+| `DATABASE_URL` | [Neon](https://neon.tech) → new project → connection string |
+| `AUTH_SECRET` | `openssl rand -base64 32` |
+| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | GitHub → Settings → Developer settings → OAuth Apps |
+| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | [Google Cloud Console](https://console.cloud.google.com) → APIs & Services → Credentials |
+| `ANTHROPIC_API_KEY` | [Anthropic Console](https://console.anthropic.com) |
+
+---
+
+## Deploy to Vercel
+
+1. Push to GitHub
+2. Import repo in [Vercel](https://vercel.com)
+3. Add all env vars in Vercel project settings
+4. Deploy — done
+
+---
+
+## Tech stack
+
+- [Next.js 16](https://nextjs.org) (App Router, TypeScript)
+- [NextAuth v5](https://authjs.dev)
+- [Prisma 7](https://prisma.io) + [Neon](https://neon.tech)
+- [@dnd-kit](https://dndkit.com)
+- [Claude API](https://anthropic.com) (Haiku)
+- [Tailwind CSS v4](https://tailwindcss.com)
