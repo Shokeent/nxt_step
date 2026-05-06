@@ -8,7 +8,10 @@ import { authConfig } from './auth.config'
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
-  providers: [GitHub, Google],
+  providers: [
+    GitHub,
+    ...(process.env.AUTH_GOOGLE_ID ? [Google] : []),
+  ],
   callbacks: {
     ...authConfig.callbacks,
     session: async ({ session, user }) => {

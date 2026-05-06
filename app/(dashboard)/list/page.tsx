@@ -1,4 +1,5 @@
 import { auth } from '@/auth'
+import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { Badge } from '@/components/ui/badge'
 import { ExternalLink, Trash2 } from 'lucide-react'
@@ -7,9 +8,10 @@ import { STATUS_LABELS } from '@/types'
 
 export default async function ListPage() {
   const session = await auth()
+  if (!session?.user?.email) redirect('/login')
 
   const user = await prisma.user.findUnique({
-    where: { email: session!.user!.email! },
+    where: { email: session.user.email },
     include: { applications: { orderBy: { createdAt: 'desc' } } },
   })
 

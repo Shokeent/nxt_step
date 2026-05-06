@@ -1,4 +1,5 @@
 import { auth } from '@/auth'
+import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import type { ApplicationStatus } from '@/types'
 import { STATUSES, STATUS_LABELS, STATUS_COLORS } from '@/types'
@@ -6,9 +7,10 @@ import { cn } from '@/lib/utils'
 
 export default async function StatsPage() {
   const session = await auth()
+  if (!session?.user?.email) redirect('/login')
 
   const user = await prisma.user.findUnique({
-    where: { email: session!.user!.email! },
+    where: { email: session.user.email },
     include: { applications: true },
   })
 

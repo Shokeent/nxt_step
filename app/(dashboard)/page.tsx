@@ -1,13 +1,15 @@
 import { auth } from '@/auth'
+import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
 import type { JobApplication } from '@/types'
 
 export default async function BoardPage() {
   const session = await auth()
+  if (!session?.user?.email) redirect('/login')
 
   const user = await prisma.user.findUnique({
-    where: { email: session!.user!.email! },
+    where: { email: session.user.email },
     include: { applications: { orderBy: { createdAt: 'desc' } } },
   })
 
