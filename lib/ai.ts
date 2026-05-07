@@ -10,7 +10,7 @@ export async function extractFromEmail(emailContent: string): Promise<{
   notes: string | null
 }> {
   const message = await client.messages.create({
-    model: process.env.AI_MODEL!,
+    model: process.env.AI_MODEL ?? 'claude-sonnet-4-6',
     max_tokens: 512,
     messages: [
       {
