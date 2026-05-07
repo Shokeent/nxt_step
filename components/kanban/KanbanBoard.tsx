@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { toast } from 'sonner'
 import {
   DndContext,
   DragEndEvent,
@@ -84,6 +85,7 @@ export function KanbanBoard({ initialApplications }: KanbanBoardProps) {
       persistedStatuses.current[activeId] = overStatus
     } catch {
       setApplications(snapshot)
+      toast.error('Failed to move card. Please try again.')
     }
   }
 
@@ -95,6 +97,11 @@ export function KanbanBoard({ initialApplications }: KanbanBoardProps) {
   function handleAdd(app: JobApplication) {
     setApplications((prev) => [app, ...prev])
     persistedStatuses.current[app.id] = app.status
+  }
+
+  function handleEdit(updated: JobApplication) {
+    setApplications((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
+    persistedStatuses.current[updated.id] = updated.status as ApplicationStatus
   }
 
   return (
@@ -112,12 +119,13 @@ export function KanbanBoard({ initialApplications }: KanbanBoardProps) {
             applications={applications.filter((a) => a.status === status)}
             onDelete={handleDelete}
             onAdd={handleAdd}
+            onEdit={handleEdit}
           />
         ))}
       </div>
       <DragOverlay>
         {activeApp ? (
-          <ApplicationCard app={activeApp} onDelete={() => {}} isDragging />
+          <ApplicationCard app={activeApp} onDelete={() => {}} onEdit={() => {}} isDragging />
         ) : null}
       </DragOverlay>
     </DndContext>

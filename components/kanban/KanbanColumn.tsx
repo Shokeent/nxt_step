@@ -13,9 +13,10 @@ interface KanbanColumnProps {
   applications: JobApplication[]
   onDelete: (id: string) => void
   onAdd: (app: JobApplication) => void
+  onEdit: (updated: JobApplication) => void
 }
 
-export function KanbanColumn({ status, applications, onDelete, onAdd }: KanbanColumnProps) {
+export function KanbanColumn({ status, applications, onDelete, onAdd, onEdit }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status })
 
   return (
@@ -47,7 +48,7 @@ export function KanbanColumn({ status, applications, onDelete, onAdd }: KanbanCo
           strategy={verticalListSortingStrategy}
         >
           {applications.map((app) => (
-            <ApplicationCard key={app.id} app={app} onDelete={onDelete} />
+            <ApplicationCard key={app.id} app={app} onDelete={onDelete} onEdit={onEdit} />
           ))}
         </SortableContext>
         {applications.length === 0 && (

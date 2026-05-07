@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -50,6 +51,7 @@ export function ApplicationForm({ defaultStatus = 'APPLIED', onSuccess, onCancel
       })
       if (!res.ok) throw new Error('Failed to save application')
       const app = await res.json()
+      toast.success('Application added')
       onSuccess(app)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')

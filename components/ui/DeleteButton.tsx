@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Trash2 } from 'lucide-react'
 
 export function DeleteButton({ id, label }: { id: string; label: string }) {
@@ -14,9 +15,10 @@ export function DeleteButton({ id, label }: { id: string; label: string }) {
     try {
       const res = await fetch(`/api/applications/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
+      toast.success('Application deleted')
       router.refresh()
     } catch {
-      alert('Failed to delete. Please try again.')
+      toast.error('Failed to delete. Please try again.')
     } finally {
       setLoading(false)
     }
