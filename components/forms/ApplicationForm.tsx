@@ -17,6 +17,7 @@ interface ApplicationFormProps {
 
 export function ApplicationForm({ defaultStatus = 'APPLIED', onSuccess, onCancel }: ApplicationFormProps) {
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState({
     company: '',
     role: '',
@@ -34,6 +35,7 @@ export function ApplicationForm({ defaultStatus = 'APPLIED', onSuccess, onCancel
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
+    setError(null)
     try {
       const res = await fetch('/api/applications', {
         method: 'POST',
@@ -46,8 +48,11 @@ export function ApplicationForm({ defaultStatus = 'APPLIED', onSuccess, onCancel
           notes: form.notes || null,
         }),
       })
+      if (!res.ok) throw new Error('Failed to save application')
       const app = await res.json()
       onSuccess(app)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setLoading(false)
     }
@@ -140,6 +145,7 @@ export function ApplicationForm({ defaultStatus = 'APPLIED', onSuccess, onCancel
       </div>
 
       <div className="flex justify-end gap-2 pt-2">
+        {error && <p className="text-sm text-red-500 self-center">{error}</p>}
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>

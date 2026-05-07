@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import type { ApplicationStatus } from '@/types'
+import { STATUSES } from '@/types'
 
 export async function GET(request: NextRequest) {
   const session = await auth()
@@ -11,11 +13,15 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status')
 
+  if (status && !STATUSES.includes(status as ApplicationStatus)) {
+    return Response.json({ error: 'Invalid status' }, { status: 400 })
+  }
+
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     include: {
       applications: {
-        where: status ? { status: status as any } : undefined,
+        where: status ? { status: status as ApplicationStatus } : undefined,
         orderBy: { createdAt: 'desc' },
       },
     },
@@ -34,6 +40,10 @@ export async function POST(request: NextRequest) {
   if (!user) return Response.json({ error: 'User not found' }, { status: 404 })
 
   const body = await request.json()
+
+  if (!body.company?.trim() || !body.role?.trim()) {
+    return Response.json({ error: 'company and role are required' }, { status: 400 })
+  }
 
   const application = await prisma.jobApplication.create({
     data: {

@@ -13,7 +13,7 @@ export default async function BoardPage() {
     include: { applications: { orderBy: { createdAt: 'desc' } } },
   })
 
-  const applications = (user?.applications ?? []) as unknown as JobApplication[]
+  const applications = user?.applications ?? [] as JobApplication[]
 
   return (
     <div className="h-full flex flex-col">

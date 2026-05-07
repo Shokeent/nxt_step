@@ -2,9 +2,10 @@ import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { Badge } from '@/components/ui/badge'
-import { ExternalLink, Trash2 } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import type { ApplicationStatus } from '@/types'
 import { STATUS_LABELS } from '@/types'
+import { DeleteButton } from '@/components/ui/DeleteButton'
 
 export default async function ListPage() {
   const session = await auth()
@@ -61,6 +62,7 @@ export default async function ListPage() {
                           <ExternalLink className="h-3.5 w-3.5" />
                         </a>
                       )}
+                      <DeleteButton id={app.id} label={`${app.company} - ${app.role}`} />
                     </div>
                   </td>
                 </tr>

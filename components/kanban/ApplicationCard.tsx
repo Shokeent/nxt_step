@@ -24,8 +24,13 @@ export function ApplicationCard({ app, onDelete, isDragging }: ApplicationCardPr
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
     if (!confirm(`Delete ${app.company} - ${app.role}?`)) return
-    await fetch(`/api/applications/${app.id}`, { method: 'DELETE' })
-    onDelete(app.id)
+    try {
+      const res = await fetch(`/api/applications/${app.id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      onDelete(app.id)
+    } catch {
+      alert('Failed to delete. Please try again.')
+    }
   }
 
   return (
